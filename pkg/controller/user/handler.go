@@ -11,16 +11,8 @@ import (
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/users"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator"
 	"github.com/rs/zerolog/log"
 )
-
-// Create a new instance of the validator
-var validate *validator.Validate
-
-func init() {
-	validate = validator.New()
-}
 
 func (con *UserController) CreateUser(c *gin.Context) {
 
