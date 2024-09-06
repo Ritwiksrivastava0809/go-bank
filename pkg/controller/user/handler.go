@@ -9,6 +9,7 @@ import (
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants/errorLogs"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/users"
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
 	"github.com/rs/zerolog/log"
@@ -30,7 +31,7 @@ func (con *UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
-	if err := validate.Struct(user); err != nil {
+	if err := utils.ValidateStruct(user); err != nil {
 		log.Error().Msgf("Validation error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Message": err.Error()})
 		return
