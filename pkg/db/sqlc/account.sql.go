@@ -81,6 +81,24 @@ func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 	return i, err
 }
 
+const getAccountByOwner = `-- name: GetAccountByOwner :one
+SELECT id, owner, balance, currency, created_at FROM accounts
+WHERE owner = $1 LIMIT 1
+`
+
+func (q *Queries) GetAccountByOwner(ctx context.Context, owner string) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAccountByOwner, owner)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Currency,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getAccountForUpdate = `-- name: GetAccountForUpdate :one
 SELECT id, owner, balance, currency, created_at FROM accounts
 WHERE id = $1 LIMIT 1
