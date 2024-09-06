@@ -18,7 +18,7 @@ func TestTransferTx(t *testing.T) {
 
 	// run n concurrent transfer transactions
 
-	n := 5
+	n := 10
 
 	amount := int64(10)
 
