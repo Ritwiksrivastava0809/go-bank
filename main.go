@@ -8,6 +8,7 @@ import (
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/config"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/server"
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -22,6 +23,8 @@ func main() {
 	flag.Parse()
 
 	config.Init(*environment)
+
+	utils.InitValidator()
 
 	database, err := config.NewDB()
 	if err != nil {
