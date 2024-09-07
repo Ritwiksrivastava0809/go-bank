@@ -21,8 +21,15 @@ SELECT * FROM accounts
 WHERE owner = $1 LIMIT 1;
 
 -- name: ListAccounts :many
-SELECT * FROM accounts
-ORDER BY id
+SELECT id, owner, balance, currency, created_at FROM accounts
+ORDER BY 
+  CASE 
+    WHEN $3 = 'id' THEN id::text
+    WHEN $3 = 'created_at' THEN created_at::text
+    WHEN $3 = 'balance' THEN balance::text
+    WHEN $3 = 'owner' THEN owner::text
+    ELSE id::text  
+  END 
 LIMIT $1
 OFFSET $2;
 

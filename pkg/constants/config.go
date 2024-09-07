@@ -21,4 +21,11 @@ const (
 	ConstantDB    = "db"
 	UserID        = "X-UserID"
 	InternalToken = "X-Internal-Token"
+	PageLimit     = "limit"
+	PageOffset    = "offset"
+	SortBy        = "sortBy"
+	ID            = "id"
+	SortDirection = "sortDirection"
+	Ascending     = "asc"
+	Descending    = "desc"
 )

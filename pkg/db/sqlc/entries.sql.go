@@ -18,6 +18,11 @@ INSERT INTO entries(
 ) RETURNING id, account_id, amount, created_at
 `
 
+type AddEntryParams struct {
+	AccountID int64 `json:"account_id"`
+	Amount    int64 `json:"amount"`
+}
+
 func (q *Queries) AddEntry(ctx context.Context, arg AddEntryParams) (Entry, error) {
 	row := q.db.QueryRowContext(ctx, addEntry, arg.AccountID, arg.Amount)
 	var i Entry
@@ -55,6 +60,11 @@ LIMIT $2
 OFFSET $3
 `
 
+type ListEntriesParams struct {
+	AccountID int64 `json:"account_id"`
+	Limit     int32 `json:"limit"`
+	Offset    int32 `json:"offset"`
+}
 
 func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error) {
 	rows, err := q.db.QueryContext(ctx, listEntries, arg.AccountID, arg.Limit, arg.Offset)
@@ -62,7 +72,7 @@ func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Ent
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Entry
+	items := []Entry{}
 	for rows.Next() {
 		var i Entry
 		if err := rows.Scan(
