@@ -9,4 +9,5 @@ const (
 	ValidationError       = "got error while validating the request body: %v"
 	InvalidUserError      = "got error while getting the user: %s"
 	AddAmountError        = "got error while adding the amount: %s"
+	ListAccountsError     = "got error while getting list of the accounts: %s"
 )

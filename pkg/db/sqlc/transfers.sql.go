@@ -46,13 +46,19 @@ LIMIT $2
 OFFSET $3
 `
 
+type GetTransactionHistoryByAccountIDParams struct {
+	FromAccountID int64 `json:"from_account_id"`
+	Limit         int32 `json:"limit"`
+	Offset        int32 `json:"offset"`
+}
+
 func (q *Queries) GetTransactionHistoryByAccountID(ctx context.Context, arg GetTransactionHistoryByAccountIDParams) ([]Transfer, error) {
 	rows, err := q.db.QueryContext(ctx, getTransactionHistoryByAccountID, arg.FromAccountID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Transfer
+	items := []Transfer{}
 	for rows.Next() {
 		var i Transfer
 		if err := rows.Scan(
@@ -85,6 +91,12 @@ INSERT INTO transfers(
 )RETURNING id, from_account_id, to_account_id, amount, created_at
 `
 
+type InsertTransactionParams struct {
+	FromAccountID int64 `json:"from_account_id"`
+	ToAccountID   int64 `json:"to_account_id"`
+	Amount        int64 `json:"amount"`
+}
+
 func (q *Queries) InsertTransaction(ctx context.Context, arg InsertTransactionParams) (Transfer, error) {
 	row := q.db.QueryRowContext(ctx, insertTransaction, arg.FromAccountID, arg.ToAccountID, arg.Amount)
 	var i Transfer
@@ -108,6 +120,13 @@ LIMIT $3
 OFFSET $4
 `
 
+type ListTransfersParams struct {
+	FromAccountID int64 `json:"from_account_id"`
+	ToAccountID   int64 `json:"to_account_id"`
+	Limit         int32 `json:"limit"`
+	Offset        int32 `json:"offset"`
+}
+
 func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error) {
 	rows, err := q.db.QueryContext(ctx, listTransfers,
 		arg.FromAccountID,
@@ -119,7 +138,7 @@ func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Transfer
+	items := []Transfer{}
 	for rows.Next() {
 		var i Transfer
 		if err := rows.Scan(

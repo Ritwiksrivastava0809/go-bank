@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/accounts"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
@@ -207,4 +208,74 @@ func (con *AccountController) AddAccountBalanaceHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Balance Updated", "Account": account})
+}
+
+func (con *AccountController) ListAccountsHandler(c *gin.Context) {
+
+	limit := c.Query(constants.PageLimit)
+	offset := c.Query(constants.PageOffset)
+
+	sortBy := c.DefaultQuery(constants.SortBy, constants.ID)
+	sortDirection := c.DefaultQuery(constants.SortDirection, constants.Ascending)
+
+	// Validate required parameters
+	if limit == "" || offset == "" {
+		log.Error().Msg("Limit and Offset query parameters are required")
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "Limit and Offset query parameters are required"})
+		return
+	}
+
+	lim, err := strconv.Atoi(limit)
+	if err != nil || lim <= 0 {
+		log.Error().Msgf("Invalid Limit: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "Invalid Limit"})
+		return
+	}
+
+	off, err := strconv.Atoi(offset)
+	if err != nil || off < 0 {
+		log.Error().Msgf("Invalid Offset: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "Invalid Offset"})
+		return
+	}
+
+	// Validate sortDirection
+	sortDirection = strings.ToLower(sortDirection)
+	if sortDirection != constants.Ascending && sortDirection != constants.Descending {
+		log.Error().Msg("Invalid sortDirection, must be 'asc' or 'desc'")
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "Invalid sortDirection, must be 'asc' or 'desc'"})
+		return
+	}
+
+	// Validate sortBy
+	validSortBy := map[string]bool{"id": true, "created_at": true, "balance": true, "owner": true}
+	if !validSortBy[sortBy] {
+		log.Error().Msg("Invalid sortBy value")
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "Invalid sortBy value"})
+		return
+	}
+
+	dB := c.MustGet(constants.ConstantDB).(*db.Store)
+
+	// Prepare query arguments for ListAccountsParams
+	arg := db.ListAccountsParams{
+		Limit:   int32(lim),
+		Offset:  int32(off),
+		Column3: sortBy,
+	}
+
+	// Execute the query
+	account, err := dB.ListAccounts(c, arg)
+	if err != nil {
+		log.Error().Msgf(errorLogs.ListAccountsError, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"Message": err.Error()})
+		return
+	}
+
+	// If sorting is descending, reverse the results in Go
+	if sortDirection == "desc" {
+		accounts.Reverse(account)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Accounts Found", "Accounts": account})
 }

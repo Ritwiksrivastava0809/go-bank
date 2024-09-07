@@ -16,6 +16,11 @@ WHERE id = $2
 RETURNING id, owner, balance, currency, created_at
 `
 
+type AddAccountBalanceParams struct {
+	Amount int64 `json:"amount"`
+	ID     int64 `json:"id"`
+}
+
 func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error) {
 	row := q.db.QueryRowContext(ctx, addAccountBalance, arg.Amount, arg.ID)
 	var i Account
@@ -38,6 +43,12 @@ INSERT INTO accounts (
     $1, $2, $3
 ) RETURNING id, owner, balance, currency, created_at
 `
+
+type CreateAccountParams struct {
+	Owner    string `json:"owner"`
+	Balance  int64  `json:"balance"`
+	Currency string `json:"currency"`
+}
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
 	row := q.db.QueryRowContext(ctx, createAccount, arg.Owner, arg.Balance, arg.Currency)
@@ -120,18 +131,31 @@ func (q *Queries) GetAccountForUpdate(ctx context.Context, id int64) (Account, e
 
 const listAccounts = `-- name: ListAccounts :many
 SELECT id, owner, balance, currency, created_at FROM accounts
-ORDER BY id
+ORDER BY 
+  CASE 
+    WHEN $3 = 'id' THEN id::text
+    WHEN $3 = 'created_at' THEN created_at::text
+    WHEN $3 = 'balance' THEN balance::text
+    WHEN $3 = 'owner' THEN owner::text
+    ELSE id::text  
+  END 
 LIMIT $1
 OFFSET $2
 `
 
+type ListAccountsParams struct {
+	Limit   int32       `json:"limit"`
+	Offset  int32       `json:"offset"`
+	Column3 interface{} `json:"column_3"`
+}
+
 func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, listAccounts, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listAccounts, arg.Limit, arg.Offset, arg.Column3)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Account
+	items := []Account{}
 	for rows.Next() {
 		var i Account
 		if err := rows.Scan(
@@ -160,6 +184,11 @@ SET balance = $2
 WHERE id = $1
 RETURNING id, owner, balance, currency, created_at
 `
+
+type UpdateAccountParams struct {
+	ID      int64 `json:"id"`
+	Balance int64 `json:"balance"`
+}
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error) {
 	row := q.db.QueryRowContext(ctx, updateAccount, arg.ID, arg.Balance)

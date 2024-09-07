@@ -51,6 +51,7 @@ func NewServer(store *db.Store) *Server {
 			accountGroup.GET("/get", accountController.GetAccountHandler)
 			accountGroup.PATCH("/update", middleware.AuthInternalTokenMiddleware, accountController.UpdateAccountBalanceHandler)
 			accountGroup.PATCH("/add", middleware.AuthInternalTokenMiddleware, accountController.AddAccountBalanaceHandler)
+			accountGroup.GET("/list", middleware.AuthInternalTokenMiddleware, accountController.ListAccountsHandler)
 		}
 	}
 
