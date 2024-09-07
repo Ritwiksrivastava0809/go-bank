@@ -8,4 +8,5 @@ const (
 	UpdateAccountError    = "got error while updating the account: %s"
 	ValidationError       = "got error while validating the request body: %v"
 	InvalidUserError      = "got error while getting the user: %s"
+	AddAmountError        = "got error while adding the amount: %s"
 )

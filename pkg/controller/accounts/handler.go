@@ -162,3 +162,49 @@ func (con *AccountController) UpdateAccountBalanceHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Balance Updated", "Account": account})
 }
+
+func (con *AccountController) AddAccountBalanaceHandler(c *gin.Context) {
+
+	userIDStr := c.Request.Header.Get(constants.UserID)
+	if userIDStr == "" {
+		log.Error().Msg("UserID header is required")
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "UserID header is required"})
+		return
+	}
+
+	var balance accounts.UpdateBalance
+	if err := c.ShouldBindJSON(&balance); err != nil {
+		log.Error().Msgf(errorLogs.BindingJsonError, err)
+		c.JSON(http.StatusBadRequest, gin.H{"Message": err.Error()})
+		return
+	}
+
+	if err := utils.ValidateStruct(balance); err != nil {
+		log.Error().Msgf(errorLogs.ValidationError, err)
+		c.JSON(http.StatusBadRequest, gin.H{"Message": err.Error()})
+		return
+	}
+
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		log.Error().Msgf(errorLogs.InvalidUserError, err)
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "Invalid User ID format"})
+		return
+	}
+
+	arg := db.AddAccountBalanceParams{
+		ID:     int64(userID),
+		Amount: balance.Balance,
+	}
+
+	dB := c.MustGet(constants.ConstantDB).(*db.Store)
+
+	account, err := dB.AddAccountBalance(c, arg)
+	if err != nil {
+		log.Error().Msgf(errorLogs.AddAmountError, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"Message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Balance Updated", "Account": account})
+}

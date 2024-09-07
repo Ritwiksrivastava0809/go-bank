@@ -44,12 +44,13 @@ func NewServer(store *db.Store) *Server {
 	// Initialize the routes
 	v0 := router.Group("/v0")
 	{
-		accountGroup := v0.Group("/users")
+		accountGroup := v0.Group("/accounts")
 		{
-			userController := new(accountController.AccountController)
-			accountGroup.POST("/create", middleware.AuthInternalTokenMiddleware, userController.CreateAccountHandler)
-			accountGroup.GET("/get", userController.GetAccountHandler)
-			accountGroup.PATCH("/update", middleware.AuthInternalTokenMiddleware, userController.UpdateAccountBalanceHandler)
+			accountController := new(accountController.AccountController)
+			accountGroup.POST("/create", middleware.AuthInternalTokenMiddleware, accountController.CreateAccountHandler)
+			accountGroup.GET("/get", accountController.GetAccountHandler)
+			accountGroup.PATCH("/update", middleware.AuthInternalTokenMiddleware, accountController.UpdateAccountBalanceHandler)
+			accountGroup.PATCH("/add", middleware.AuthInternalTokenMiddleware, accountController.AddAccountBalanaceHandler)
 		}
 	}
 
