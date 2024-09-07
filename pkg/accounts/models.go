@@ -1,6 +1,6 @@
-package users
+package accounts
 
-type CreateUser struct {
+type CreateAccount struct {
 	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required" validate:"oneof=USD EUR INR"`
 }

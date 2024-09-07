@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
-	userController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/user"
-	"github.com/Ritwiksrivastava0809/go-bank/pkg/middleware"
+	accountController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/accounts"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/middleware"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -44,12 +44,12 @@ func NewServer(store *db.Store) *Server {
 	// Initialize the routes
 	v0 := router.Group("/v0")
 	{
-		userGroup := v0.Group("/users")
+		accountGroup := v0.Group("/users")
 		{
-			userController := new(userController.UserController)
-			userGroup.POST("/create", middleware.AuthInternalTokenMiddleware, userController.CreateUserHandler)
-			userGroup.GET("/get", userController.GetUserHandler)
-			userGroup.PATCH("/update", middleware.AuthInternalTokenMiddleware, userController.UpdateUserBalanceHandler)
+			userController := new(accountController.AccountController)
+			accountGroup.POST("/create", middleware.AuthInternalTokenMiddleware, userController.CreateAccountHandler)
+			accountGroup.GET("/get", userController.GetAccountHandler)
+			accountGroup.PATCH("/update", middleware.AuthInternalTokenMiddleware, userController.UpdateAccountBalanceHandler)
 		}
 	}
 

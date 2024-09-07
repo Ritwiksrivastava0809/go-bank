@@ -1,4 +1,4 @@
-package userController
+package accountController
 
 import (
 	"database/sql"
@@ -6,40 +6,37 @@ import (
 	"net/http"
 	"strconv"
 
-
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/accounts"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants/errorLogs"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
-	"github.com/Ritwiksrivastava0809/go-bank/pkg/users"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 )
 
+func (con *AccountController) CreateAccountHandler(c *gin.Context) {
 
-func (con *UserController) CreateUserHandler(c *gin.Context) {
-
-
-	var user users.CreateUser
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var account accounts.CreateAccount
+	if err := c.ShouldBindJSON(&account); err != nil {
 		log.Error().Msgf(errorLogs.BindingJsonError, err)
 		c.JSON(http.StatusBadRequest, gin.H{"Message": err.Error()})
 		return
 	}
 
-	if err := utils.ValidateStruct(user); err != nil {
+	if err := utils.ValidateStruct(account); err != nil {
 		log.Error().Msgf("Validation error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Message": err.Error()})
 		return
 	}
 
-	if user.Owner == "" {
+	if account.Owner == "" {
 		log.Error().Msg("Owner field is required")
 		c.JSON(http.StatusBadRequest, gin.H{"Message": "Owner field is required"})
 		return
 	}
 
-	if user.Currency == "" {
+	if account.Currency == "" {
 		log.Error().Msg("Currency field is required")
 		c.JSON(http.StatusBadRequest, gin.H{"Message": "Currency field is required"})
 		return
@@ -48,7 +45,7 @@ func (con *UserController) CreateUserHandler(c *gin.Context) {
 	dB := c.MustGet(constants.ConstantDB).(*db.Store)
 
 	// Check if account already exists
-	_, err := dB.GetAccountByOwner(c, user.Owner)
+	_, err := dB.GetAccountByOwner(c, account.Owner)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			// Handle the case where no rows were found
@@ -67,12 +64,12 @@ func (con *UserController) CreateUserHandler(c *gin.Context) {
 	}
 
 	arg := db.CreateAccountParams{
-		Owner:    user.Owner,
-		Currency: user.Currency,
+		Owner:    account.Owner,
+		Currency: account.Currency,
 		Balance:  0,
 	}
 
-	account, err := dB.CreateAccount(c, arg)
+	accounts, err := dB.CreateAccount(c, arg)
 
 	if err != nil {
 		log.Error().Msgf(errorLogs.GetCreateAccountError, err)
@@ -80,10 +77,10 @@ func (con *UserController) CreateUserHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User Created", "ID": account.ID})
+	c.JSON(http.StatusOK, gin.H{"message": "User Created", "ID": accounts.ID})
 }
 
-func (con *UserController) GetUserHandler(c *gin.Context) {
+func (con *AccountController) GetAccountHandler(c *gin.Context) {
 	dB := c.MustGet(constants.ConstantDB).(*db.Store)
 
 	userIDStr := c.Query(constants.UserID) // Get the user ID as a string from query parameters
@@ -121,7 +118,7 @@ func (con *UserController) GetUserHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "User Found", "Account": account})
 }
 
-func (con *UserController) UpdateUserBalanceHandler(c *gin.Context) {
+func (con *AccountController) UpdateAccountBalanceHandler(c *gin.Context) {
 	userIDStr := c.Request.Header.Get(constants.UserID)
 	if userIDStr == "" {
 		log.Error().Msg("UserID header is required")
@@ -129,7 +126,7 @@ func (con *UserController) UpdateUserBalanceHandler(c *gin.Context) {
 		return
 	}
 
-	var balance users.UpdateBalance
+	var balance accounts.UpdateBalance
 	if err := c.ShouldBindJSON(&balance); err != nil {
 		log.Error().Msgf(errorLogs.BindingJsonError, err)
 		c.JSON(http.StatusBadRequest, gin.H{"Message": err.Error()})
