@@ -9,23 +9,25 @@ import (
 	"context"
 )
 
-const addEntry = `-- name: AddEntry :exec
+const addEntry = `-- name: AddEntry :one
 INSERT INTO entries(
     account_id ,
     amount
 )VALUES(
     $1,$2
-)
+) RETURNING id, account_id, amount, created_at
 `
 
-type AddEntryParams struct {
-	AccountID int64 `json:"account_id"`
-	Amount    int64 `json:"amount"`
-}
-
-func (q *Queries) AddEntry(ctx context.Context, arg AddEntryParams) error {
-	_, err := q.db.ExecContext(ctx, addEntry, arg.AccountID, arg.Amount)
-	return err
+func (q *Queries) AddEntry(ctx context.Context, arg AddEntryParams) (Entry, error) {
+	row := q.db.QueryRowContext(ctx, addEntry, arg.AccountID, arg.Amount)
+	var i Entry
+	err := row.Scan(
+		&i.ID,
+		&i.AccountID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const getEntry = `-- name: GetEntry :one
@@ -53,11 +55,6 @@ LIMIT $2
 OFFSET $3
 `
 
-type ListEntriesParams struct {
-	AccountID int64 `json:"account_id"`
-	Limit     int32 `json:"limit"`
-	Offset    int32 `json:"offset"`
-}
 
 func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error) {
 	rows, err := q.db.QueryContext(ctx, listEntries, arg.AccountID, arg.Limit, arg.Offset)

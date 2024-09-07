@@ -8,15 +8,20 @@ dropdb:
 	docker exec -it postgres16 dropdb -U root bank
 
 migrateup :
-	migrate -path db/migration -database  "postgresql://root:password@localhost:5432/bank?sslmode=disable" -verbose up
+	migrate -path pkg/db/migration -database  "postgresql://root:password@localhost:5432/bank?sslmode=disable" -verbose up
 
 migratedown :
-	migrate -path db/migration -database  "postgresql://root:password@localhost:5432/bank?sslmode=disable" -verbose down
+	migrate -path pkg/db/migration -database  "postgresql://root:password@localhost:5432/bank?sslmode=disable" -verbose down
 
 sqlc: 
 	sqlc generate
 
 test:
 	go test -v -cover ./...
+
+
+server: 
+	go run main.go -e development	
 	
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server
+
