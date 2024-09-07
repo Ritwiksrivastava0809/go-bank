@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants/errorLogs"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
@@ -15,7 +16,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+
 func (con *UserController) CreateUserHandler(c *gin.Context) {
+
 
 	var user users.CreateUser
 	if err := c.ShouldBindJSON(&user); err != nil {
