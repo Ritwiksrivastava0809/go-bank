@@ -46,7 +46,8 @@ func NewServer(store *db.Store) *Server {
 		userGroup := v0.Group("/users")
 		{
 			userController := new(userController.UserController)
-			userGroup.POST("/create", userController.CreateUser)
+			userGroup.POST("/create", middleware.AuthInternalTokenMiddleware, userController.CreateUserHandler)
+			userGroup.GET("/get", userController.GetUserHandler)
 		}
 	}
 

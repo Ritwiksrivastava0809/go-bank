@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants/errorLogs"
@@ -14,7 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (con *UserController) CreateUser(c *gin.Context) {
+func (con *UserController) CreateUserHandler(c *gin.Context) {
 
 	var user users.CreateUser
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -77,4 +78,42 @@ func (con *UserController) CreateUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User Created", "ID": account.ID})
+}
+
+func (con *UserController) GetUserHandler(c *gin.Context) {
+	dB := c.MustGet(constants.ConstantDB).(*db.Store)
+
+	userIDStr := c.Query(constants.UserID) // Get the user ID as a string from query parameters
+	if userIDStr == "" {
+		log.Error().Msg("UserID query parameter is required")
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "UserID query parameter is required"})
+		return
+	}
+
+	// Try to convert the userID to an integer
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		log.Error().Msgf("Invalid UserID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "Invalid UserID"})
+		return
+	}
+
+	// Fetch account based on userID
+	account, err := dB.GetAccount(c, int64(userID)) // Assuming GetAccount expects int64
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			// Handle the case where no rows were found
+			log.Info().Msg("Account not found")
+			c.JSON(http.StatusNotFound, gin.H{"Message": "Account not found"})
+			return
+		} else {
+			// Handle other errors
+			log.Error().Msgf(errorLogs.GetAccountError, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"Message": "Error retrieving account"})
+			return
+		}
+	}
+
+	// Successfully found the account
+	c.JSON(http.StatusOK, gin.H{"message": "User Found", "Account": account})
 }
