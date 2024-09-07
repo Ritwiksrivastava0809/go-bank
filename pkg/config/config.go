@@ -42,6 +42,8 @@ func GetConfig() *viper.Viper {
 	return config
 }
 
+
 func GetInternalToken() string {
 	return config.GetString("token.internal")
 }
+
