@@ -65,6 +65,7 @@ func (con *UserController) CreateUser(c *gin.Context) {
 	arg := db.CreateAccountParams{
 		Owner:    user.Owner,
 		Currency: user.Currency,
+		Balance:  0,
 	}
 
 	account, err := dB.CreateAccount(c, arg)
