@@ -49,7 +49,7 @@ func NewServer(store *db.Store) *Server {
 			userController := new(userController.UserController)
 			userGroup.POST("/create", middleware.AuthInternalTokenMiddleware, userController.CreateUserHandler)
 			userGroup.GET("/get", userController.GetUserHandler)
-
+			userGroup.PATCH("/update", middleware.AuthInternalTokenMiddleware, userController.UpdateUserBalanceHandler)
 		}
 	}
 
