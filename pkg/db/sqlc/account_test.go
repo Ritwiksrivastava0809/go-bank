@@ -122,3 +122,18 @@ func TestListAccount(t *testing.T) {
 	}
 
 }
+
+func TestGetAccountByOwner(t *testing.T) {
+	account1 := createRandomAccount(t)
+	account2, err := testQueries.GetAccountByOwner(context.Background(), account1.Owner)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, account2)
+
+	require.Equal(t, account1.Owner, account2.Owner)
+	require.Equal(t, account1.Balance, account2.Balance)
+	require.Equal(t, account1.Currency, account2.Currency)
+	require.Equal(t, account1.ID, account2.ID)
+	require.WithinDuration(t, account1.CreatedAt, account2.CreatedAt, time.Second)
+
+}

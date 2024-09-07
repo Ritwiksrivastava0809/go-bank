@@ -5,9 +5,9 @@ import (
 
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	userController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/user"
-
-	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/middleware"
+	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -34,7 +34,8 @@ func NewServer(store *db.Store) *Server {
 	router.Use(middleware.LoggerMiddleware())
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"*"}
-	corsConfig.AllowMethods = []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete}
+
+	corsConfig.AllowMethods = []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete, http.MethodOptions}
 	corsConfig.AllowHeaders = []string{constants.Origin, constants.ContentType, constants.ContentLength, constants.Authorization}
 
 	// Apply the CORS middleware to your router
@@ -46,7 +47,9 @@ func NewServer(store *db.Store) *Server {
 		userGroup := v0.Group("/users")
 		{
 			userController := new(userController.UserController)
-			userGroup.POST("/create", userController.CreateUser)
+			userGroup.POST("/create", middleware.AuthInternalTokenMiddleware, userController.CreateUserHandler)
+			userGroup.GET("/get", userController.GetUserHandler)
+
 		}
 	}
 

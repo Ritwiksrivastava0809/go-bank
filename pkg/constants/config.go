@@ -18,5 +18,7 @@ const (
 
 // handler related constants
 const (
-	ConstantDB = "db"
+	ConstantDB    = "db"
+	UserID        = "X-UserID"
+	InternalToken = "X-Internal-Token"
 )
