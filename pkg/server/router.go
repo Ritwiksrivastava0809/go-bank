@@ -6,6 +6,7 @@ import (
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	accountController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/accounts"
 	transactionController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/transactions"
+	userController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/users"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/middleware"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
@@ -51,7 +52,15 @@ func NewServer(store *db.Store) *Server {
 
 	// Initialize the routes
 	v0 := router.Group("/v0")
+
 	{
+
+		userGroup := v0.Group("/users")
+		{
+			userController := new(userController.UserController)
+			userGroup.POST("/create", middleware.AuthInternalTokenMiddleware, userController.CreateUserHandler)
+		}
+
 		accountGroup := v0.Group("/accounts")
 		{
 			accountController := new(accountController.AccountController)
