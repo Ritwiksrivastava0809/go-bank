@@ -16,3 +16,13 @@ func InitValidator() {
 func ValidateStruct(s interface{}) error {
 	return Validator.Struct(s)
 }
+
+var ValidCurrency validator.Func = func(feildLevel validator.FieldLevel) bool {
+	if currency, ok := feildLevel.Field().Interface().(string); ok {
+		// check if the currency is valid
+		flag := ISSupportedCurrency(currency)
+		return flag
+
+	}
+	return false
+}

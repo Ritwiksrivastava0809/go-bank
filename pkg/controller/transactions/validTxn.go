@@ -34,7 +34,7 @@ func (con *TransactionController) ValidAccount(c *gin.Context, accountID int64, 
 	if account.Currency != currency {
 		err := fmt.Errorf("account [%d] currency mismatch %s vs %s", accountID, account.Currency, currency)
 		log.Error().Msg(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"Message": err})
+		c.JSON(http.StatusBadRequest, gin.H{"Message": err.Error()})
 		return false
 	}
 
