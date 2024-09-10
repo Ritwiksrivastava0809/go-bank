@@ -5,6 +5,7 @@ import (
 
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	accountController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/accounts"
+	transactionController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/transactions"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/middleware"
 
@@ -52,6 +53,12 @@ func NewServer(store *db.Store) *Server {
 			accountGroup.PATCH("/update", middleware.AuthInternalTokenMiddleware, accountController.UpdateAccountBalanceHandler)
 			accountGroup.PATCH("/add", middleware.AuthInternalTokenMiddleware, accountController.AddAccountBalanaceHandler)
 			accountGroup.GET("/list", middleware.AuthInternalTokenMiddleware, accountController.ListAccountsHandler)
+		}
+
+		transactionGroup := v0.Group("/transactions")
+		{
+			transactionController := new(transactionController.TransactionController)
+			transactionGroup.POST("/Insert", middleware.AuthInternalTokenMiddleware, transactionController.InsertTransactionHandler)
 		}
 	}
 
