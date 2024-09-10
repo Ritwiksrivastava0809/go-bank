@@ -9,7 +9,7 @@ import (
 // Store provides all functions to execute db queries and transactions
 type Store struct {
 	*Queries
-	db *sql.DB
+	DB *sql.DB
 }
 
 type TransferTxParams struct {
@@ -31,7 +31,7 @@ var txKey = struct{}{} //the second bracket means that we are creating a new emp
 // NewStore creates a new Store
 func NewStore(db *sql.DB) *Store {
 	return &Store{
-		db:      db,
+		DB:      db,
 		Queries: New(db),
 	}
 }
@@ -39,7 +39,7 @@ func NewStore(db *sql.DB) *Store {
 // execTx executes a function within a database transaction
 func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 
-	tx, err := store.db.BeginTx(ctx, nil)
+	tx, err := store.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
