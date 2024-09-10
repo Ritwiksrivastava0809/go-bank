@@ -2,7 +2,7 @@ package accounts
 
 type CreateAccount struct {
 	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required" validate:"oneof=USD EUR INR"`
+	Currency string `json:"currency" binding:"required , currency"`
 }
 
 type UpdateBalance struct {

@@ -5,11 +5,15 @@ import (
 
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	accountController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/accounts"
+	transactionController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/transactions"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/middleware"
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 // Server serves htttp requests
@@ -27,6 +31,10 @@ func NewServer(store *db.Store) *Server {
 		c.Set(constants.ConstantDB, store)
 		c.Next()
 	})
+
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", utils.ValidCurrency)
+	}
 
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
@@ -52,6 +60,12 @@ func NewServer(store *db.Store) *Server {
 			accountGroup.PATCH("/update", middleware.AuthInternalTokenMiddleware, accountController.UpdateAccountBalanceHandler)
 			accountGroup.PATCH("/add", middleware.AuthInternalTokenMiddleware, accountController.AddAccountBalanaceHandler)
 			accountGroup.GET("/list", middleware.AuthInternalTokenMiddleware, accountController.ListAccountsHandler)
+		}
+
+		transactionGroup := v0.Group("/transactions")
+		{
+			transactionController := new(transactionController.TransactionController)
+			transactionGroup.POST("/Insert", middleware.AuthInternalTokenMiddleware, transactionController.InsertTransactionHandler)
 		}
 	}
 

@@ -29,3 +29,15 @@ const (
 	Ascending     = "asc"
 	Descending    = "desc"
 )
+
+// currency related constants
+const (
+	USD  = "USD"
+	EUR  = "EUR"
+	INR  = "INR"
+	CAD  = "CAD"
+	YEN  = "YEN"
+	RUB  = "RUB"
+	YUAN = "YUAN"
+	PESO = "PESO"
+)
