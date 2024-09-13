@@ -18,16 +18,17 @@ const (
 
 // handler related constants
 const (
-	ConstantDB    = "db"
-	UserID        = "X-UserID"
-	InternalToken = "X-Internal-Token"
-	PageLimit     = "limit"
-	PageOffset    = "offset"
-	SortBy        = "sortBy"
-	ID            = "id"
-	SortDirection = "sortDirection"
-	Ascending     = "asc"
-	Descending    = "desc"
+	ConstantDB      = "db"
+	UserID          = "X-UserID"
+	InternalToken   = "X-Internal-Token"
+	PageLimit       = "limit"
+	PageOffset      = "offset"
+	SortBy          = "sortBy"
+	ID              = "id"
+	SortDirection   = "sortDirection"
+	Ascending       = "asc"
+	Descending      = "desc"
+	MinSecretKeyLen = 32
 )
 
 // currency related constants
@@ -40,4 +41,10 @@ const (
 	RUB  = "RUB"
 	YUAN = "YUAN"
 	PESO = "PESO"
+)
+
+// error messages
+const (
+	ExipredToken      = "token has expired"
+	InvalidTokenError = "invalid token"
 )

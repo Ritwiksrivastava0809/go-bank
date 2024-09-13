@@ -17,4 +17,5 @@ const (
 	CheckUserExistenceError = "got error while checking the user existence. error :: %s"
 	TransactionError        = "got error while starting the transaction. error :: %s"
 	CommitTransactionError  = "got error while committing the transaction. error :: %s"
+	InvalidKeySize          = "invalid key size : must be atleast %d characters long"
 )
