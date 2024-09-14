@@ -6,6 +6,7 @@ import (
 
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	"github.com/google/uuid"
+	"github.com/o1egl/paseto"
 )
 
 func NewPayload(username string, duration time.Duration) (*Payload, error) {
@@ -30,4 +31,10 @@ func (payload *Payload) Valid() error {
 	}
 
 	return nil
+}
+
+// PasetoMaker is a Paseto token maker
+type PasetoMaker struct {
+	paseto      *paseto.V2
+	symetricKey []byte
 }
