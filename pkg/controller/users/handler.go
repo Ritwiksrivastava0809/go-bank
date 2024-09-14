@@ -2,7 +2,6 @@ package userController
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"net/mail"
 	"time"
@@ -141,7 +140,6 @@ func (con *UserController) LoginUserHandler(c *gin.Context) {
 		// Handle the case where the user doesn't exist
 		if err == sql.ErrNoRows {
 			tx.Rollback()
-			fmt.Println("User not found")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
@@ -155,7 +153,6 @@ func (con *UserController) LoginUserHandler(c *gin.Context) {
 	// Check if the password is correct
 	if err := utils.VerifyPassword(user.HashedPassword, login.Password); err != nil {
 		tx.Rollback()
-		fmt.Println("Password incorrect")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
