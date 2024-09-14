@@ -1,14 +1,18 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/config"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants/errorLogs"
 	accountController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/accounts"
 	transactionController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/transactions"
 	userController "github.com/Ritwiksrivastava0809/go-bank/pkg/controller/users"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/middleware"
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/token"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
 	"github.com/go-playground/validator/v10"
 
@@ -19,17 +23,28 @@ import (
 
 // Server serves htttp requests
 type Server struct {
-	store  *db.Store
-	router *gin.Engine
+	store     *db.Store
+	tokeMaker token.Maker
+	router    *gin.Engine
 }
 
 // NewServer creates a new HTTP server and set up routing
-func NewServer(store *db.Store) *Server {
-	server := &Server{store: store}
+func NewServer(store *db.Store) (*Server, error) {
+
+	tokenMaker, err := token.NewPasetoMaker(config.GetSymmetricKey())
+	if err != nil {
+		return nil, fmt.Errorf(errorLogs.TokenError, err)
+	}
+
+	server := &Server{
+		store:     store,
+		tokeMaker: tokenMaker,
+	}
 	router := gin.Default()
 
 	router.Use(func(c *gin.Context) {
 		c.Set(constants.ConstantDB, store)
+		c.Set(constants.TokenMaker, tokenMaker)
 		c.Next()
 	})
 
@@ -59,6 +74,7 @@ func NewServer(store *db.Store) *Server {
 		{
 			userController := new(userController.UserController)
 			userGroup.POST("/create", middleware.AuthInternalTokenMiddleware, userController.CreateUserHandler)
+			userGroup.POST("/login", middleware.AuthInternalTokenMiddleware, userController.LoginUserHandler)
 		}
 
 		accountGroup := v0.Group("/accounts")
@@ -79,6 +95,6 @@ func NewServer(store *db.Store) *Server {
 	}
 
 	server.router = router
-	return server
+	return server, nil
 
 }

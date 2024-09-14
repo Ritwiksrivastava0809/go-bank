@@ -18,4 +18,6 @@ const (
 	TransactionError        = "got error while starting the transaction. error :: %s"
 	CommitTransactionError  = "got error while committing the transaction. error :: %s"
 	InvalidKeySize          = "invalid key size : must be atleast %d characters long"
+	TokenError              = "got error while generating the token. error :: %s"
+	GetUserError            = "got error while getting the user. error :: %s"
 )
