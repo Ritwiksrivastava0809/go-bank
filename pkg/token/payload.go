@@ -35,6 +35,6 @@ func (payload *Payload) Valid() error {
 
 // PasetoMaker is a Paseto token maker
 type PasetoMaker struct {
-	paseto      *paseto.V2
-	symetricKey []byte
+	paseto       *paseto.V2
+	symmetricKey []byte
 }
