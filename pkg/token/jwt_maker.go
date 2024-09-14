@@ -6,14 +6,14 @@ import (
 
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants/errorLogs"
-	"github.com/golang-jwt/jwt"
+	"github.com/dgrijalva/jwt-go"
 )
 
-func NewJWTMaker(secretKey string) (Maker, error) {
+// NewJWTMAKER creates a new JWTMAKER
+func NewJWTMAKER(secretKey string) (Maker, error) {
 	if len(secretKey) < constants.MinSecretKeyLen {
 		return nil, fmt.Errorf(errorLogs.InvalidKeySize, constants.MinSecretKeyLen)
 	}
-
 	return &JWTMAKER{secretKey}, nil
 }
 
@@ -35,7 +35,7 @@ func (maker *JWTMAKER) VerifyToken(token string) (*Payload, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
-			return nil, fmt.Errorf(constants.InvalidTokenError)
+			return nil, fmt.Errorf(constants.InvalidToken)
 		}
 
 		return []byte(maker.secretKey), nil
@@ -44,14 +44,14 @@ func (maker *JWTMAKER) VerifyToken(token string) (*Payload, error) {
 	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
 	if err != nil {
 		verr, ok := err.(*jwt.ValidationError)
-		if ok && verr.Errors == jwt.ValidationErrorExpired {
+		if ok && verr.Errors == constants.JWTValidationErrorExpired {
 			return nil, fmt.Errorf(constants.ExipredToken)
 		}
-		return nil, fmt.Errorf(constants.InvalidTokenError)
+		return nil, fmt.Errorf(constants.InvalidToken)
 	}
 	payload, ok := jwtToken.Claims.(*Payload)
 	if !ok {
-		return nil, fmt.Errorf(constants.InvalidTokenError)
+		return nil, fmt.Errorf(constants.InvalidToken)
 	}
 
 	return payload, nil

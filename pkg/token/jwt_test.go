@@ -1,17 +1,19 @@
 package token
 
 import (
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/require"
 )
 
 func TestJWTMaker(t *testing.T) {
 
-	maker, err := NewJWTMaker(utils.RandomString(32))
+	maker, err := NewJWTMAKER(utils.RandomString(32))
 	require.NoError(t, err)
 	require.NotEmpty(t, maker)
 
@@ -38,11 +40,9 @@ func TestJWTMaker(t *testing.T) {
 
 }
 
-func TestExpiryToken(t *testing.T) {
-
-	maker, err := NewJWTMaker(utils.RandomString(32))
+func TestExpiredJWTToken(t *testing.T) {
+	maker, err := NewJWTMAKER(utils.RandomString(32))
 	require.NoError(t, err)
-	require.NotEmpty(t, maker)
 
 	token, err := maker.CreateToken(utils.RandomOwner(), -time.Minute)
 	require.NoError(t, err)
@@ -54,14 +54,19 @@ func TestExpiryToken(t *testing.T) {
 	require.Nil(t, payload)
 }
 
-func TestInavlidToken(t *testing.T) {
-
-	maker, err := NewJWTMaker(utils.RandomString(32))
+func TestInvalidJWTTokenAlgNone(t *testing.T) {
+	payload, err := NewPayload(utils.RandomOwner(), time.Minute)
 	require.NoError(t, err)
-	require.NotEmpty(t, maker)
 
-	payload, err := maker.VerifyToken("invalid-token")
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodNone, payload)
+	token, err := jwtToken.SignedString(jwt.UnsafeAllowNoneSignatureType)
+	require.NoError(t, err)
+
+	maker, err := NewJWTMAKER(utils.RandomString(32))
+	require.NoError(t, err)
+
+	payload, err = maker.VerifyToken(token)
 	require.Error(t, err)
-	require.EqualError(t, err, constants.InvalidTokenError)
+	require.EqualError(t, err, errors.New(constants.InvalidToken).Error())
 	require.Nil(t, payload)
 }

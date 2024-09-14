@@ -45,6 +45,7 @@ const (
 
 // error messages
 const (
-	ExipredToken      = "token has expired"
-	InvalidTokenError = "invalid token"
+	ExipredToken              = "token has expired"
+	InvalidToken              = "token is invalid"
+	JWTValidationErrorExpired = 512
 )
