@@ -1,13 +1,17 @@
 package userController
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
 	"net/mail"
 	"time"
 
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/config"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants/errorLogs"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/token"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/users"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -98,5 +102,95 @@ func (con *UserController) CreateUserHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "user created", "User": createdUser.Username})
+	// Return the response
+	resp := users.NewUserResponse(db.User{
+		Username:          createdUser.Username,
+		FullName:          createdUser.FullName,
+		Email:             createdUser.Email,
+		PasswordChangedAt: createdUser.PasswordChangedAt,
+		CreatedAt:         createdUser.CreatedAt,
+	})
+
+	c.JSON(http.StatusOK, gin.H{"message": "user created", "Response": resp})
+}
+
+func (con *UserController) LoginUserHandler(c *gin.Context) {
+	var login users.LoginUserRequest
+	if err := c.ShouldBindJSON(&login); err != nil {
+		log.Error().Msg(errorLogs.BindingJsonError)
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorLogs.BindingJsonError})
+		return
+	}
+
+	dB := c.MustGet(constants.ConstantDB).(*db.Store)
+
+	// Start a transaction
+	tx, err := dB.DB.BeginTx(c, nil)
+	if err != nil {
+		log.Error().Msgf(errorLogs.TransactionError, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": errorLogs.TransactionError})
+		return
+	}
+
+	// Use the transaction with Queries
+	txQueries := dB.WithTx(tx)
+
+	// Get the user
+	user, err := txQueries.GetUserByUsername(c, login.UserName)
+	if err != nil {
+		// Handle the case where the user doesn't exist
+		if err == sql.ErrNoRows {
+			tx.Rollback()
+			fmt.Println("User not found")
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			return
+		}
+		// Other errors related to the query
+		tx.Rollback()
+		log.Error().Msgf(errorLogs.GetUserError, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": errorLogs.GetUserError})
+		return
+	}
+
+	// Check if the password is correct
+	if err := utils.VerifyPassword(user.HashedPassword, login.Password); err != nil {
+		tx.Rollback()
+		fmt.Println("Password incorrect")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		return
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		log.Error().Msgf(errorLogs.CommitTransactionError, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+
+	// Create token and send it back
+	token, ok := c.MustGet(constants.TokenMaker).(token.Maker)
+	if !ok {
+		log.Error().Msg("failed to retrieve token maker from context")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+
+	accessToken, err := token.CreateToken(
+		user.Username,
+		time.Duration(config.GetAccessTokenDuration()),
+	)
+
+	if err != nil {
+		log.Error().Msgf(errorLogs.TokenError, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+
+	resp := users.LoginUserResponse{
+		AccessToken: accessToken,
+		User:        users.NewUserResponse(user),
+	}
+
+	// Add response if needed (e.g., JWT token generation or success message)
+	c.JSON(http.StatusOK, gin.H{"message": "login successful", "response": resp})
 }

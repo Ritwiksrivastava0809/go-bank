@@ -88,3 +88,23 @@ func TestGetUserByUsername(t *testing.T) {
 
 	require.NotZero(t, user2.CreatedAt)
 }
+
+func TestVerifyPassword(t *testing.T) {
+	// Define the test password
+	password := "testpassword"
+
+	// Hash the password using Argon2
+	hashedPassword, err := utils.HashPasswordArgon2(password)
+	require.NoError(t, err)
+	require.NotEmpty(t, hashedPassword)
+
+	// Test Case 1: Correct password verification
+	err = utils.VerifyPassword(hashedPassword, password)
+	require.NoError(t, err)
+
+	// Test Case 2: Incorrect password verification
+	wrongPassword := "wrongpassword"
+	err = utils.VerifyPassword(hashedPassword, wrongPassword)
+	require.Error(t, err)
+	require.EqualError(t, err, "password does not match")
+}

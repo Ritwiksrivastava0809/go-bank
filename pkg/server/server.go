@@ -10,7 +10,10 @@ import (
 
 func Init(dbConnection *db.Store) {
 	config := config.GetConfig()
-	router := NewServer(dbConnection)
+	router, err := NewServer(dbConnection)
+	if err != nil {
+		log.Fatal().Msg(fmt.Sprintf("error while initializing the server :: %s", err))
+	}
 	log.Debug().Msg(config.GetString("server.port"))
 	serverUrl := fmt.Sprintf("%s:%s", config.GetString("server.host"), config.GetString("server.port"))
 	router.router.Run(serverUrl)

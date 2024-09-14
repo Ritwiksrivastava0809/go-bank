@@ -16,10 +16,10 @@ func RandomPassword() string {
 }
 
 // HashPasswordArgon2 hashes the password using Argon2id
+// HashPasswordArgon2 hashes the password using Argon2id
 func HashPasswordArgon2(password string) (string, error) {
 	salt := make([]byte, 16) // 16 bytes salt
-	_, err := rand.Read(salt)
-	if err != nil {
+	if _, err := rand.Read(salt); err != nil {
 		return "", err
 	}
 
@@ -27,12 +27,12 @@ func HashPasswordArgon2(password string) (string, error) {
 	hash := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32)
 
 	// Encode salt and hash for storage in a database
-	saltStr := base64.RawStdEncoding.EncodeToString(salt)
+	saltStr := base64.RawStdEncoding.EncodeToString(salt) // Consistent encoding
 	hashStr := base64.RawStdEncoding.EncodeToString(hash)
 	return fmt.Sprintf("%s:%s", saltStr, hashStr), nil
 }
 
-// Function to verify the password during login
+// VerifyPassword verifies the provided password against the stored password
 func VerifyPassword(storedPassword string, providedPassword string) error {
 	// Split the stored password into salt and hash
 	parts := strings.Split(storedPassword, ":")
@@ -43,7 +43,7 @@ func VerifyPassword(storedPassword string, providedPassword string) error {
 	storedHashStr := parts[1]
 
 	// Decode the salt
-	salt, err := base64.StdEncoding.DecodeString(saltStr)
+	salt, err := base64.RawStdEncoding.DecodeString(saltStr) // Consistent decoding
 	if err != nil {
 		return fmt.Errorf("error decoding salt: %w", err)
 	}
@@ -72,7 +72,7 @@ func hashPasswordWithSalt(password string, salt []byte) string {
 	hash := argon2.IDKey([]byte(password), salt, time, memory, threads, keyLen)
 
 	// Encode the hash to a Base64 string
-	hashStr := base64.StdEncoding.EncodeToString(hash)
+	hashStr := base64.RawStdEncoding.EncodeToString(hash) // Consistent encoding
 
 	return hashStr
 }

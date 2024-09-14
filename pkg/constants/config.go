@@ -29,6 +29,8 @@ const (
 	Ascending       = "asc"
 	Descending      = "desc"
 	MinSecretKeyLen = 32
+	TokenMaker      = "tokenMaker"
+	ConstantPayload = "payload"
 )
 
 // currency related constants
