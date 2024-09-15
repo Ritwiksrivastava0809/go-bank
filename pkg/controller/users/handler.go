@@ -6,7 +6,6 @@ import (
 	"net/mail"
 	"time"
 
-	"github.com/Ritwiksrivastava0809/go-bank/pkg/config"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants/errorLogs"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
@@ -174,7 +173,7 @@ func (con *UserController) LoginUserHandler(c *gin.Context) {
 
 	accessToken, err := token.CreateToken(
 		user.Username,
-		time.Duration(config.GetAccessTokenDuration()),
+		utils.GetAccessTokenDuration(),
 	)
 
 	if err != nil {

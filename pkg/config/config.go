@@ -49,7 +49,3 @@ func GetInternalToken() string {
 func GetSymmetricKey() string {
 	return config.GetString("token.symmetric")
 }
-
-func GetAccessTokenDuration() int {
-	return config.GetInt("token.access_duration")
-}

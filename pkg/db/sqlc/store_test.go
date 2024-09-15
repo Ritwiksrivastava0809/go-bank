@@ -110,10 +110,18 @@ func TestTransferTx(t *testing.T) {
 	}
 
 	// check account balances after the transfer
-	updateAccount1, err := store.GetAccount(context.Background(), account1.ID)
+	arg := GetAccountParams{
+		ID:       account1.ID,
+		Currency: account1.Currency,
+	}
+	updateAccount1, err := store.GetAccount(context.Background(), arg)
 	require.NoError(t, err)
 
-	updateAccount2, err := store.GetAccount(context.Background(), account2.ID)
+	arg = GetAccountParams{
+		ID:       account2.ID,
+		Currency: account2.Currency,
+	}
+	updateAccount2, err := store.GetAccount(context.Background(), arg)
 	require.NoError(t, err)
 
 	fmt.Println("after transfer :: ", updateAccount1.Balance, updateAccount2.Balance)

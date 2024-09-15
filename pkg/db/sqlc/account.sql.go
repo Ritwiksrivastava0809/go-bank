@@ -76,11 +76,16 @@ func (q *Queries) DeleteAccount(ctx context.Context, id int64) error {
 
 const getAccount = `-- name: GetAccount :one
 SELECT id, owner, balance, currency, created_at FROM accounts
-WHERE id = $1 LIMIT 1
+WHERE id = $1 and currency = $2 LIMIT 1
 `
 
-func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
-	row := q.db.QueryRowContext(ctx, getAccount, id)
+type GetAccountParams struct {
+	ID       int64  `json:"id"`
+	Currency string `json:"currency"`
+}
+
+func (q *Queries) GetAccount(ctx context.Context, arg GetAccountParams) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAccount, arg.ID, arg.Currency)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -94,11 +99,16 @@ func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 
 const getAccountByOwner = `-- name: GetAccountByOwner :one
 SELECT id, owner, balance, currency, created_at FROM accounts
-WHERE owner = $1 LIMIT 1
+WHERE owner = $1  and currency = $2 LIMIT 1
 `
 
-func (q *Queries) GetAccountByOwner(ctx context.Context, owner string) (Account, error) {
-	row := q.db.QueryRowContext(ctx, getAccountByOwner, owner)
+type GetAccountByOwnerParams struct {
+	Owner    string `json:"owner"`
+	Currency string `json:"currency"`
+}
+
+func (q *Queries) GetAccountByOwner(ctx context.Context, arg GetAccountByOwnerParams) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAccountByOwner, arg.Owner, arg.Currency)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -131,26 +141,33 @@ func (q *Queries) GetAccountForUpdate(ctx context.Context, id int64) (Account, e
 
 const listAccounts = `-- name: ListAccounts :many
 SELECT id, owner, balance, currency, created_at FROM accounts
+where owner = $1
 ORDER BY 
   CASE 
-    WHEN $3 = 'id' THEN id::text
-    WHEN $3 = 'created_at' THEN created_at::text
-    WHEN $3 = 'balance' THEN balance::text
-    WHEN $3 = 'owner' THEN owner::text
+    WHEN $2 = 'id' THEN id::text
+    WHEN $2 = 'created_at' THEN created_at::text
+    WHEN $2 = 'balance' THEN balance::text
+    WHEN $2 = 'owner' THEN owner::text
     ELSE id::text  
   END 
-LIMIT $1
-OFFSET $2
+LIMIT $3
+OFFSET $4
 `
 
 type ListAccountsParams struct {
+	Owner   string      `json:"owner"`
+	Column2 interface{} `json:"column_2"`
 	Limit   int32       `json:"limit"`
 	Offset  int32       `json:"offset"`
-	Column3 interface{} `json:"column_3"`
 }
 
 func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, listAccounts, arg.Limit, arg.Offset, arg.Column3)
+	rows, err := q.db.QueryContext(ctx, listAccounts,
+		arg.Owner,
+		arg.Column2,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
