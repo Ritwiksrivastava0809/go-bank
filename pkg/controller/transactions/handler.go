@@ -6,6 +6,7 @@ import (
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants/errorLogs"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/token"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/transactions"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -21,11 +22,21 @@ func (con *TransactionController) InsertTransactionHandler(c *gin.Context) {
 		return
 	}
 
-	if !con.ValidAccount(c, txn.FromAccountID, txn.Currency) {
+	fromAccount, valid := con.ValidAccount(c, txn.FromAccountID, txn.Currency)
+	if !valid {
 		return
 	}
 
-	if !con.ValidAccount(c, txn.ToAccountID, txn.Currency) {
+	authPayload := c.MustGet(constants.AuthorizationPayloadKey).(*token.Payload)
+
+	if fromAccount.Owner != authPayload.Username {
+		log.Error().Msg("Error :: Account does not belong to the user")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Account does not belong to the user"})
+		return
+	}
+
+	_, valid = con.ValidAccount(c, txn.ToAccountID, txn.Currency)
+	if !valid {
 		return
 	}
 

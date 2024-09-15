@@ -13,21 +13,24 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (con *TransactionController) ValidAccount(c *gin.Context, accountID int64, currency string) bool {
+func (con *TransactionController) ValidAccount(c *gin.Context, accountID int64, currency string) (db.Account, bool) {
 	dB := c.MustGet(constants.ConstantDB).(*db.Store)
 	flag := true
 
-	account, err := dB.GetAccount(c, accountID)
+	account, err := dB.GetAccount(c, db.GetAccountParams{
+		ID:       accountID,
+		Currency: currency,
+	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			// Handle the case where no rows were found
 			log.Info().Msg("Account not found, creating new account")
-			return false
+			return account, false
 		}
 		// Handle other errors
 		log.Error().Msgf(errorLogs.GetAccountError, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Message": "Error retrieving account"})
-		return false
+		return account, false
 
 	}
 
@@ -35,8 +38,8 @@ func (con *TransactionController) ValidAccount(c *gin.Context, accountID int64, 
 		err := fmt.Errorf("account [%d] currency mismatch %s vs %s", accountID, account.Currency, currency)
 		log.Error().Msg(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"Message": err.Error()})
-		return false
+		return account, false
 	}
 
-	return flag
+	return account, flag
 }

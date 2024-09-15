@@ -65,32 +65,37 @@ func NewServer(store *db.Store) (*Server, error) {
 	// Apply the CORS middleware to your router
 	router.Use(cors.New(corsConfig))
 
+	authMiddleWare := middleware.AuthTokenMiddleware(tokenMaker)
+
 	// Initialize the routes
 	v0 := router.Group("/v0")
 
 	{
 
 		userGroup := v0.Group("/users")
+		userGroup.Use(middleware.AuthInternalTokenMiddleware)
 		{
 			userController := new(userController.UserController)
-			userGroup.POST("/create", middleware.AuthInternalTokenMiddleware, userController.CreateUserHandler)
-			userGroup.POST("/login", middleware.AuthInternalTokenMiddleware, userController.LoginUserHandler)
+			userGroup.POST("/create", userController.CreateUserHandler)
+			userGroup.POST("/login", userController.LoginUserHandler)
 		}
 
 		accountGroup := v0.Group("/accounts")
 		{
 			accountController := new(accountController.AccountController)
-			accountGroup.POST("/create", middleware.AuthInternalTokenMiddleware, accountController.CreateAccountHandler)
-			accountGroup.GET("/get", accountController.GetAccountHandler)
+			accountGroup.POST("/create", authMiddleWare, middleware.AuthInternalTokenMiddleware, accountController.CreateAccountHandler)
+			accountGroup.GET("/get", authMiddleWare, middleware.AuthInternalTokenMiddleware, accountController.GetAccountHandler)
 			accountGroup.PATCH("/update", middleware.AuthInternalTokenMiddleware, accountController.UpdateAccountBalanceHandler)
 			accountGroup.PATCH("/add", middleware.AuthInternalTokenMiddleware, accountController.AddAccountBalanaceHandler)
-			accountGroup.GET("/list", middleware.AuthInternalTokenMiddleware, accountController.ListAccountsHandler)
+			accountGroup.GET("/list", authMiddleWare, middleware.AuthInternalTokenMiddleware, accountController.ListAccountsHandler)
 		}
 
 		transactionGroup := v0.Group("/transactions")
+		transactionGroup.Use(authMiddleWare)
+		transactionGroup.Use(middleware.AuthInternalTokenMiddleware)
 		{
 			transactionController := new(transactionController.TransactionController)
-			transactionGroup.POST("/Insert", middleware.AuthInternalTokenMiddleware, transactionController.InsertTransactionHandler)
+			transactionGroup.POST("/Insert", transactionController.InsertTransactionHandler)
 		}
 	}
 

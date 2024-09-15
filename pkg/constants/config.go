@@ -18,19 +18,22 @@ const (
 
 // handler related constants
 const (
-	ConstantDB      = "db"
-	UserID          = "X-UserID"
-	InternalToken   = "X-Internal-Token"
-	PageLimit       = "limit"
-	PageOffset      = "offset"
-	SortBy          = "sortBy"
-	ID              = "id"
-	SortDirection   = "sortDirection"
-	Ascending       = "asc"
-	Descending      = "desc"
-	MinSecretKeyLen = 32
-	TokenMaker      = "tokenMaker"
-	ConstantPayload = "payload"
+	ConstantDB              = "db"
+	UserID                  = "X-UserID"
+	InternalToken           = "X-Internal-Token"
+	PageLimit               = "limit"
+	PageOffset              = "offset"
+	SortBy                  = "sortBy"
+	ID                      = "id"
+	SortDirection           = "sortDirection"
+	Ascending               = "asc"
+	Descending              = "desc"
+	MinSecretKeyLen         = 32
+	TokenMaker              = "tokenMaker"
+	ConstantPayload         = "payload"
+	AuthorizationPayloadKey = "authorization_payload"
+	Bearer                  = "Bearer"
+	Currency                = "currency"
 )
 
 // currency related constants

@@ -174,7 +174,7 @@ func (con *UserController) LoginUserHandler(c *gin.Context) {
 
 	accessToken, err := token.CreateToken(
 		user.Username,
-		time.Duration(config.GetAccessTokenDuration()),
+		time.Duration(config.GetAccessTokenDuration())*time.Minute,
 	)
 
 	if err != nil {

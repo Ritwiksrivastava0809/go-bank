@@ -11,6 +11,7 @@ import (
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/constants/errorLogs"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
+	"github.com/Ritwiksrivastava0809/go-bank/pkg/token"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -31,11 +32,7 @@ func (con *AccountController) CreateAccountHandler(c *gin.Context) {
 		return
 	}
 
-	if account.Owner == "" {
-		log.Error().Msg("Owner field is required")
-		c.JSON(http.StatusBadRequest, gin.H{"Message": "Owner field is required"})
-		return
-	}
+	authPayload := c.MustGet(constants.AuthorizationPayloadKey).(*token.Payload)
 
 	if account.Currency == "" {
 		log.Error().Msg("Currency field is required")
@@ -46,7 +43,11 @@ func (con *AccountController) CreateAccountHandler(c *gin.Context) {
 	dB := c.MustGet(constants.ConstantDB).(*db.Store)
 
 	// Check if account already exists
-	_, err := dB.GetAccountByOwner(c, account.Owner)
+	arg := db.GetAccountByOwnerParams{
+		Owner:    authPayload.Username,
+		Currency: account.Currency,
+	}
+	_, err := dB.GetAccountByOwner(c, arg)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			// Handle the case where no rows were found
@@ -64,13 +65,13 @@ func (con *AccountController) CreateAccountHandler(c *gin.Context) {
 		return
 	}
 
-	arg := db.CreateAccountParams{
-		Owner:    account.Owner,
+	args := db.CreateAccountParams{
+		Owner:    authPayload.Username,
 		Currency: account.Currency,
 		Balance:  100,
 	}
 
-	accounts, err := dB.CreateAccount(c, arg)
+	accounts, err := dB.CreateAccount(c, args)
 
 	if err != nil {
 		log.Error().Msgf(errorLogs.GetCreateAccountError, err)
@@ -91,16 +92,19 @@ func (con *AccountController) GetAccountHandler(c *gin.Context) {
 		return
 	}
 
-	// Try to convert the userID to an integer
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		log.Error().Msgf("Invalid UserID: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Message": "Invalid UserID"})
+	currency := c.Query(constants.Currency)
+	if currency == "" {
+		log.Error().Msg("Currency query parameter is required")
+		c.JSON(http.StatusBadRequest, gin.H{"Message": "Currency query parameter is required"})
 		return
 	}
 
 	// Fetch account based on userID
-	account, err := dB.GetAccount(c, int64(userID)) // Assuming GetAccount expects int64
+	arg := db.GetAccountByOwnerParams{
+		Owner:    userIDStr,
+		Currency: currency,
+	}
+	account, err := dB.GetAccountByOwner(c, arg) // Assuming GetAccount expects int64
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			// Handle the case where no rows were found
@@ -113,6 +117,13 @@ func (con *AccountController) GetAccountHandler(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"Message": "Error retrieving account"})
 			return
 		}
+	}
+
+	authPayload := c.MustGet(constants.AuthorizationPayloadKey).(*token.Payload)
+	if account.Owner != authPayload.Username {
+		log.Error().Msg("User is not authorized to view this account")
+		c.JSON(http.StatusUnauthorized, gin.H{"Message": "User is not authorized to view this account"})
+		return
 	}
 
 	// Successfully found the account
@@ -257,11 +268,14 @@ func (con *AccountController) ListAccountsHandler(c *gin.Context) {
 
 	dB := c.MustGet(constants.ConstantDB).(*db.Store)
 
+	authPayload := c.MustGet(constants.AuthorizationPayloadKey).(*token.Payload)
+
 	// Prepare query arguments for ListAccountsParams
 	arg := db.ListAccountsParams{
+		Owner:   authPayload.Username,
+		Column2: sortBy,
 		Limit:   int32(lim),
 		Offset:  int32(off),
-		Column3: sortBy,
 	}
 
 	// Execute the query

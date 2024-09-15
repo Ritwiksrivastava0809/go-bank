@@ -51,5 +51,5 @@ func GetSymmetricKey() string {
 }
 
 func GetAccessTokenDuration() int {
-	return config.GetInt("token.access_duration")
+	return config.GetInt("token.access.duration")
 }
