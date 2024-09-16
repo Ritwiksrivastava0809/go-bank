@@ -8,6 +8,8 @@ RUN go build -o main main.go
 FROM alpine:3.20
 WORKDIR /app
 COPY --from=builder /app/main .
+COPY environment/development.yaml /app/environment/
+
 
 EXPOSE 8080
 

@@ -32,7 +32,7 @@ func main() {
 
 	database, err := config.NewDB()
 	if err != nil {
-		log.Fatal().Msg("Cannot connect to database")
+		log.Fatal().Msgf("Cannot connect to database error :: %s", err)
 	}
 	defer database.Close()
 
