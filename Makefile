@@ -1,5 +1,8 @@
+network:
+	docker network create bank-network
+
 postgres :
-	docker run --name postgres16 --network my_network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=password -d postgres:16-alpine
+	docker run --name postgres16 --network bank-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=password -d postgres:16-alpine
 
 createdb:
 	docker exec -it postgres16 createdb -U root bank
@@ -32,19 +35,20 @@ docker-build:
 	docker build -t go-bank:latest .
 
 docker-run:
-	docker run --name go-bank --network my_network -p 8080:8080 go-bank:latest
+	docker run --name go-bank --network bank-network -p 8080:8080 go-bank:latest
 
 docker-stop:
 	docker stop go-bank
 	docker rm go-bank	
 
 go-bank-up:
-	docker run --name postgres16 --network my_network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=password -d postgres:16-alpine
+	docker network create bank-network 
+	docker run --name postgres16 --network bank-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=password -d postgres:16-alpine
 	sleep 3
 	docker exec -it postgres16 createdb -U root bank
 	migrate -path pkg/db/migration -database  "postgresql://root:password@localhost:5432/bank?sslmode=disable" -verbose up
 	docker build -t go-bank:latest .
-	docker run --name go-bank --network my_network -p 8080:8080 go-bank:latest
+	docker run --name go-bank --network bank-network -p 8080:8080 go-bank:latest
 
 
 go-bank-down:
@@ -56,5 +60,7 @@ go-bank-down:
 	docker rm postgres16
 	docker rmi go-bank:latest
 	docker rmi postgres:16-alpine
+	docker network rm bank-network
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server migrateup1 migratedown1 docker-build docker-run docker-stop go-bank-up go-bank-down
+
+.PHONY: network postgres createdb dropdb migrateup migratedown sqlc test server migrateup1 migratedown1 docker-build docker-run docker-stop go-bank-up go-bank-down
