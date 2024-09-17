@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  postgres16:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=bank
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_SOURCE=postgresql://root:password@postgres16:5432/bank?sslmode=disable
+    depends_on:
+      - postgres16
+    entrypoint: ["/app/wait-for.sh", "postgres16:5432", "--", "/app/start.sh"]
+    command: ["/app/main"]  # Wait for PostgreSQL before starting the Go app
+
+networks:
+  go-bank-network:
+    driver: bridge
