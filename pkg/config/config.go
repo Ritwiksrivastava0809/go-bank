@@ -50,6 +50,6 @@ func GetSymmetricKey() string {
 	return config.GetString("token.symmetric")
 }
 
-func GetAccessTokenDuration() int {
-	return config.GetInt("token.access.duration")
+func GetAccessTokenDuration() string {
+	return config.GetString("token.access.duration")
 }
