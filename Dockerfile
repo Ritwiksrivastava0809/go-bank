@@ -17,6 +17,8 @@ COPY environment/development.yaml /app/environment/
 COPY start.sh .
 COPY wait-for.sh /app/wait-for.sh
 COPY pkg/db/migration /app/migration   
+RUN ls -al /app/environment/
+
 
 EXPOSE 8080
 
