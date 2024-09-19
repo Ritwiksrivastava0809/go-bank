@@ -1,0 +1,16 @@
+server:
+  host: "0.0.0.0"
+  port: "8080"
+
+db:
+  username: "root"
+  password: "password"
+  host: "postgres16"
+  port: 5432
+  name: "bank"
+  sslmode: "disable"
+
+token:
+  internal: "7MzCLAmHrgz5bBUGzI5KrTIrkG0vyQkKs"
+  symmetric: "Kg4gc&+9v4vLq;kqK#CNtE}hW3dNn:VM"
+  access_token_duration: "15m"
