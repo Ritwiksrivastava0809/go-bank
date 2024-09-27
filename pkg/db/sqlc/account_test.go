@@ -36,6 +36,7 @@ func createRandomAccount(t *testing.T) Account {
 
 }
 
+// TestCreatAccount is a test function to test the CreateAccount function
 func TestCreatAccount(t *testing.T) {
 	user := CreateRandomUser(t)
 	arg := CreateAccountParams{
