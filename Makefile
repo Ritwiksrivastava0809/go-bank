@@ -62,11 +62,5 @@ go-bank-down:
 	docker rmi postgres:16-alpine
 	docker network rm bank-network
 
-aws-prod:
-aws secretsmanager get-secret-value --secret-id bank --query SecretString --output text | jq -r '
-. |
-"server:\n  host: \(.Server_Address | split(":")[0])\n  port: \(.Server_Address | split(":")[1])\n" +
-"db:\n  username: root\n  password: password\n  host: \(.DB_Source | capture("@(?<host>[^:]+):") | .host)\n  port: 5432\n  name: bank\n  sslmode: disable\n" +
-"token:\n  symmetric: \(.Symmetric)\n  access_token_duration: \(.Access_Token_Duration)"' > environment/production.yaml
 
-.PHONY: network postgres createdb dropdb migrateup migratedown sqlc test server migrateup1 migratedown1 docker-build docker-run docker-stop go-bank-up go-bank-down aws-prod
+.PHONY: network postgres createdb dropdb migrateup migratedown sqlc test server migrateup1 migratedown1 docker-build docker-run docker-stop go-bank-up go-bank-down
