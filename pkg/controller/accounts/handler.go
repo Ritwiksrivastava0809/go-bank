@@ -79,7 +79,7 @@ func (con *AccountController) CreateAccountHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User Created", "ID": accounts.ID})
+	c.JSON(http.StatusOK, gin.H{"message": "Account Created", "ID": accounts.ID})
 }
 
 func (con *AccountController) GetAccountHandler(c *gin.Context) {
