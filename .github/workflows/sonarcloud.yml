@@ -1,0 +1,91 @@
+name: "Go-bank - SonarCloud Analysis"
+
+on: 
+    push:
+        branches:
+            - master
+    pull_request:
+        branches:
+            - master
+    workflow_dispatch:
+
+jobs:
+    sonarcloud:
+        name: SonarCloud Scan
+        runs-on: ubuntu-latest
+
+        env:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_USER: root
+                    POSTGRES_PASSWORD: password
+                    POSTGRES_DB: bank
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Setup Go
+              uses: actions/setup-go@v4
+              with:
+                  go-version: 1.21
+                  cache: true
+
+            - name: Install Dependencies
+              run: go mod tidy
+
+            - name: Wait for PostgreSQL to be Ready
+              run: |
+                  for i in {1..10}; do
+                    if pg_isready -h localhost -p 5432 -U root -d bank; then
+                      echo "PostgreSQL is ready"
+                      exit 0
+                    fi
+                    echo "Waiting for PostgreSQL..."
+                    sleep 5
+                  done
+                  echo "PostgreSQL did not start in time"
+                  exit 1
+
+            - name: Install golang-migrate
+              run: |
+                curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+                sudo mv migrate.linux-amd64 /usr/bin/migrate
+                which migrate
+
+            - name: Run Migrations
+              run: make migrateup
+
+            - name: Run Tests
+              run: make test                  
+
+            - name: Run Tests and Generate Coverage Report
+              run: go test -race -covermode=atomic -coverprofile=coverage.out ./...
+
+            - name: Install GolangCI-Lint
+              run: |
+                  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+
+            - name: Run GolangCI-Lint
+              run: golangci-lint run --out-format checkstyle > golangci-report.out || true
+
+            - name: Run SonarCloud Scanner
+              uses: sonarsource/sonarcloud-github-action@v2
+              with:
+                args: >
+                        -Dsonar.projectKey=Ritwiksrivastava0809_go-bank
+                        -Dsonar.organization=ritwiksrivastava0809
+                        -Dsonar.branch.name=${{ github.ref_name }}
+              env:
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
