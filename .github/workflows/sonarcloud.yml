@@ -86,5 +86,6 @@ jobs:
                 args: >
                         -Dsonar.projectKey=ritwiksrivastava0809_go-bank
                         -Dsonar.organization=ritwiksrivastava0809
+                        -Dsonar.branch.name=${{ github.ref_name }}
               env:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
