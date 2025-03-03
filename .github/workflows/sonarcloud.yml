@@ -57,16 +57,17 @@ jobs:
                   done
                   echo "PostgreSQL did not start in time"
                   exit 1
+
             - name: Install golang-migrate
               run: |
                 curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
                 sudo mv migrate.linux-amd64 /usr/bin/migrate
                 which migrate
-                
-                - name: Run migrations
-                    run: make migrateup
-        
-            - name: Test
+
+            - name: Run Migrations
+              run: make migrateup
+
+            - name: Run Tests
               run: make test                  
 
             - name: Run Tests and Generate Coverage Report
@@ -80,17 +81,8 @@ jobs:
               run: golangci-lint run --out-format checkstyle > golangci-report.out || true
 
             - name: Run SonarCloud Scanner
-              run: |
-                sonar-scanner \
-                -Dsonar.projectKey=ritwiksrivastava0809_go-bank \
-                -Dsonar.organization=ritwiksrivastava0809 \
-                -Dsonar.host.url=https://sonarcloud.io \
-                -Dsonar.token=$SONAR_TOKEN \
-                -Dsonar.sources=. \
-                -Dsonar.exclusions=**/*_test.go \
-                -Dsonar.go.coverage.reportPaths=coverage.out \
-                -Dsonar.go.golangci-lint.reportPaths=golangci-report.out
-
-
-            - name: Cleanup
-              run: rm -rf sonar-scanner-cli.zip sonar-scanner-4.8.0.2856-linux
+              uses: sonarsource/sonarcloud-github-action@v2
+              with:
+                projectBaseDir: .
+              env:
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
