@@ -14,3 +14,9 @@ token:
   internal: "7MzCLAmHrgz5bBUGzI5KrTIrkG0vyQkKs"
   symmetric: "Kg4gc&+9v4vLq;kqK#CNtE}hW3dNn:VM"
   access_token_duration: "15m"
+
+newrelic:
+  app_name: "bank"
+  license_key: "1234567890"
+  log_level: "info"
+  enabled: true

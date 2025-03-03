@@ -5,12 +5,13 @@ import (
 
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/config"
 	db "github.com/Ritwiksrivastava0809/go-bank/pkg/db/sqlc"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/rs/zerolog/log"
 )
 
-func Init(dbConnection *db.Store) {
+func InitWithNewRelic(dbConnection *db.Store, app *newrelic.Application) {
 	config := config.GetConfig()
-	router, err := NewServer(dbConnection)
+	router, err := NewServer(dbConnection, app)
 	if err != nil {
 		log.Fatal().Msg(fmt.Sprintf("error while initializing the server :: %s", err))
 	}
