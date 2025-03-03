@@ -83,6 +83,8 @@ jobs:
             - name: Run SonarCloud Scanner
               uses: sonarsource/sonarcloud-github-action@v2
               with:
-                projectBaseDir: .
+                args: >
+                        -Dsonar.projectKey=ritwiksrivastava0809_go-bank
+                        -Dsonar.organization=ritwiksrivastava0809
               env:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
