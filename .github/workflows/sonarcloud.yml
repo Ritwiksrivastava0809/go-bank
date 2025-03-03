@@ -84,8 +84,12 @@ jobs:
               uses: sonarsource/sonarcloud-github-action@v2
               with:
                 args: >
-                        -Dsonar.projectKey=Ritwiksrivastava0809_go-bank
-                        -Dsonar.organization=ritwiksrivastava0809
-                        -Dsonar.branch.name=${{ github.ref_name }}
+                    -Dsonar.projectKey=Ritwiksrivastava0809_go-bank
+                    -Dsonar.organization=ritwiksrivastava0809
+                    -Dsonar.branch.name="${{ github.ref_name }}"
+                    -Dsonar.sources=.
+                    -Dsonar.exclusions=**/*_test.go
+                    -Dsonar.go.coverage.reportPaths=coverage.out
+                    -Dsonar.go.golangci-lint.reportPaths=golangci-report.out
               env:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
