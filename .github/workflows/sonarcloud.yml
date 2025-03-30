@@ -81,15 +81,15 @@ jobs:
               run: golangci-lint run --out-format checkstyle > golangci-report.out || true
 
             - name: Run SonarCloud Scanner
-              uses: sonarsource/sonarcloud-github-action@v2
+              uses: sonarsource/sonarcloud-github-action@master
               with:
                 args: >
-                    -Dsonar.projectKey=Ritwiksrivastava0809_go-bank
-                    -Dsonar.organization=ritwiksrivastava0809
+                    # -Dsonar.projectKey=Ritwiksrivastava0809_go-bank
+                    # -Dsonar.organization=ritwiksrivastava0809
                     -Dsonar.branch.name="${{ github.ref_name }}"
-                    -Dsonar.sources=.
-                    -Dsonar.exclusions=**/*_test.go
-                    -Dsonar.go.coverage.reportPaths=coverage.out
-                    -Dsonar.go.golangci-lint.reportPaths=golangci-report.out
+                    # -Dsonar.sources=.
+                    # -Dsonar.exclusions=**/*_test.go
+                    # -Dsonar.go.coverage.reportPaths=coverage.out
+                    # -Dsonar.go.golangci-lint.reportPaths=golangci-report.out
               env:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
