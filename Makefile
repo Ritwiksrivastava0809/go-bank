@@ -11,10 +11,10 @@ dropdb:
 	docker exec -it postgres16 dropdb -U root bank
 
 migrateup :
-	migrate -path pkg/db/migration -database  "postgresql://root:password@localhost:5432/bank?sslmode=disable" -verbose up
+	migrate -path pkg/db/migration -database  "postgresql://root:ci4PV1yPsZLk4rxKCLHE@bank.chi60uym6kv7.ap-south-1.rds.amazonaws.com:5432/bank" -verbose up
 
 migratedown :
-	migrate -path pkg/db/migration -database  "postgresql://root:password@localhost:5432/bank?sslmode=disable" -verbose down
+	migrate -path pkg/db/migration -database  "postgresql://root:ci4PV1yPsZLk4rxKCLHE@bank.chi60uym6kv7.ap-south-1.rds.amazonaws.com:5432/bank" -verbose down
 
 migrateup1 :
 	migrate -path pkg/db/migration -database  "postgresql://root:password@localhost:5432/bank?sslmode=disable" -verbose up 1
