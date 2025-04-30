@@ -15,6 +15,8 @@ import (
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/token"
 	"github.com/Ritwiksrivastava0809/go-bank/pkg/utils"
 	"github.com/go-playground/validator/v10"
+	"github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -29,7 +31,7 @@ type Server struct {
 }
 
 // NewServer creates a new HTTP server and set up routing
-func NewServer(store *db.Store) (*Server, error) {
+func NewServer(store *db.Store, app *newrelic.Application) (*Server, error) {
 
 	tokenMaker, err := token.NewPasetoMaker(config.GetSymmetricKey())
 	if err != nil {
@@ -41,6 +43,8 @@ func NewServer(store *db.Store) (*Server, error) {
 		tokeMaker: tokenMaker,
 	}
 	router := gin.Default()
+
+	router.Use(nrgin.Middleware(app))
 
 	router.Use(func(c *gin.Context) {
 		c.Set(constants.ConstantDB, store)
@@ -56,6 +60,7 @@ func NewServer(store *db.Store) (*Server, error) {
 	router.Use(gin.Recovery())
 
 	router.Use(middleware.LoggerMiddleware())
+	router.Use(middleware.NewRelicLoggerMiddleware())
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"*"}
 
